@@ -1,22 +1,30 @@
 <template>
 	<view>
+		<!-- 使用自定义的搜素组件 -->
+		<!-- 使用组件时直接加上事件处理不会生效，要在组件里面先定义事件处理函数，进行关联 -->
+		<my-search @click="gotoSearch"></my-search>
+		<!-- 自己设置背景颜色和圆角尺寸 -->
+		<!-- <my-search :bgcolor="'pink'" :radius="3"></my-search> -->
+
+
 		<view class="scroll-view-container">
 			<!-- 左侧列表区域 -->
 			<scroll-view class="left-scroll-view" scroll-y="true" :style="{height: wh + 'px'}">
 				<block v-for="(item, i) in cateList" :key="i">
 					<!-- 动态添加类名 -->
-					<view :class="['left-scroll-view-item', i === active ? 'active' : '']" 
-					@click="activeChange(i)">{{item.cat_name}}</view>
+					<view :class="['left-scroll-view-item', i === active ? 'active' : '']" @click="activeChange(i)">
+						{{item.cat_name}}</view>
 				</block>
 			</scroll-view>
 			<!-- 右侧滑动区域 -->
 			<scroll-view class="right-scroll-view" scroll-y="true" :style="{height: wh + 'px'}" :scroll-top="scrollTop">
 				<view class="cate-lv2" v-for="(item2, i2) in cateLevel2" :key="i2">
 					<view class="cate-lv2-title">/ {{item2.cat_name}} /</view>
-					
+
 					<!-- 动态渲染三级列表 -->
 					<view class="cate-lv3-list">
-						<view class="cate-lv3-item" v-for="(item3, i3) in item2.children" :key="i3" @click="gotoGoodsList(item3)">
+						<view class="cate-lv3-item" v-for="(item3, i3) in item2.children" :key="i3"
+							@click="gotoGoodsList(item3)">
 							<!-- 图片 -->
 							<image :src="item3.cat_icon"></image>
 							<!-- 文本 -->
@@ -49,7 +57,9 @@
 			// 同步获取系统信息
 			const sysInfo = uni.getSystemInfoSync()
 			// console.log(sysInfo)
-			this.wh = sysInfo.windowHeight
+			// this.wh = sysInfo.windowHeight
+			// 搜索框组件的高度要减去
+			this.wh = sysInfo.windowHeight - 50
 
 			this.getCateList()
 		},
@@ -60,23 +70,30 @@
 				// console.log(res)
 				// 为左侧目录列表赋值
 				this.cateList = res.message
-				
+
 				// 为右侧二级列表赋初始值
 				this.cateLevel2 = res.message[0].children
 			},
-			activeChange(i){
+			activeChange(i) {
 				this.active = i
-				
+
 				// 为二级分类列表重新赋值
 				this.cateLevel2 = this.cateList[i].children
-				
+
 				// 切换分类列表时，右侧滚动条需要重置为0，但是和数据里面的默认值一样的话，就不会生效，所以在 0 和 1 之间变化，用户察觉不出
 				this.scrollTop = this.scrollTop == 0 ? 1 : 0
 			},
 			// 三级列表跳转到商品列表页面
-			gotoGoodsList(item3){
+			gotoGoodsList(item3) {
 				uni.navigateTo({
-					url:'/subpkg/goods_list/goods_list?cid=' + item3.cat_id
+					url: '/subpkg/goods_list/goods_list?cid=' + item3.cat_id
+				})
+			},
+			// 搜索页面跳转
+			gotoSearch() {
+				// console.log('ok')
+				uni.navigateTo({
+					url:'/subpkg/search/search'
 				})
 			}
 		}
@@ -123,11 +140,11 @@
 			text-align: center;
 			padding: 15px 0;
 		}
-		
-		.cate-lv3-list{
+
+		.cate-lv3-list {
 			display: flex;
 			flex-wrap: wrap;
-			
+
 			.cate-lv3-item {
 				width: 33.33%;
 				display: flex;
@@ -135,13 +152,13 @@
 				justify-content: center;
 				align-items: center;
 				margin-bottom: 10px;
-				
+
 				image {
 					width: 60px;
 					height: 60px;
 				}
-				
-				text{
+
+				text {
 					font-size: 12px;
 				}
 			}
