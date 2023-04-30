@@ -24,7 +24,7 @@
 				</view>
 			</view>
 			<!-- 运费 -->
-			<view class="yf">快递：免运费</view>
+			<view class="yf">快递：免运费 </view>
 		</view>
 
 		<!-- 商品详细信息 -->
@@ -39,7 +39,48 @@
 </template>
 
 <script>
+	// 8.3 在商品详情页中使用 Store 中的数据
+	// 1. 从 vuex 中按需导出 mapState 辅助方法
+	// 1" 按需导入 mapMutations 这个辅助方法
+	// 1"" 按需导入 mapGetters 这个辅助方法
+	import { mapState, mapMutations, mapGetters } from 'vuex'
+
 	export default {
+		// 2. 调用 mapState 方法，把 m_cart 模块中的 cart 数组映射到当前页面中，作为计算属性来使用
+		// 2"" 把 m_cart 模块中名称为 total 的 getter 映射到当前页面中使用
+		computed: {
+			...mapState('m_cart', []),
+			...mapGetters('m_cart', ['total'])
+		},
+		// 3"" 通过 watch 侦听器，监听计算属性 total 值的变化，从而动态为购物车按钮的徽标赋值
+		watch: {
+			// total(newVal) {
+			// 	// 通过数组的 find() 方法，找到购物车按钮的配置对象
+			// 	const findResult = this.options.find(x => x.text === '购物车')
+
+			// 	// 动态为购物车按钮的 info 属性赋值
+			// 	if (findResult) {
+			// 		findResult.info = newVal
+			// 	}
+			// }
+
+			// 优化total监听器
+			// 使用普通函数的形式定义的 watch 侦听器，在页面首次加载后不会被调用。
+			// 因此导致了商品详情页在首次加载完毕之后，不会显示购物车右上角的总数量
+			// 为了防止这个上述问题，可以使用对象的形式来定义 watch 侦听器
+			// 定义 total 侦听器，指向一个配置对象
+			total: {
+				// handler 属性用来定义侦听器的 function 处理函数
+				handler(newVal) {
+					const findResult = this.options.find(x => x.text === '购物车')
+					if (findResult) {
+						findResult.info = newVal
+					}
+				},
+				// immediate 属性用来声明此侦听器，是否在页面初次加载完毕后立即调用
+				immediate: true
+			}
+		},
 		data() {
 			return {
 				// 商品详情对象
@@ -53,8 +94,9 @@
 				}, {
 					icon: 'cart',
 					text: '购物车',
-					info: 2
+					info: 0
 				}],
+				// 底部商品导航区右侧配置
 				buttonGroup: [{
 						text: '加入购物车',
 						backgroundColor: '#ff0000',
@@ -66,9 +108,6 @@
 						color: '#fff'
 					}
 				]
-				// 底部商品导航区右侧配置
-
-
 			};
 		},
 		onLoad(options) {
@@ -76,6 +115,9 @@
 			this.getGoodsDetail(goods_id)
 		},
 		methods: {
+			// 2" 把 m_cart 模块中的 addToCart 方法映射到当前页面使用
+			...mapMutations('m_cart', ['addToCart']),
+
 			// 请求商品详情数据的方法
 			async getGoodsDetail(goods_id) {
 				const { data: res } = await uni.$http.get('/api/public/v1/goods/detail', { goods_id })
@@ -105,6 +147,23 @@
 					uni.switchTab({
 						url: '/pages/cart/cart'
 					})
+				}
+			},
+			buttonClick(e) {
+				console.log(e)
+				if (e.content.text === '加入购物车') {
+					// { goods_id, goods_name, goods_price, goods_count, goods_small_logo, goods_state }
+					const goods = {
+						goods_id: this.goods_info.goods_id,
+						goods_name: this.goods_info.goods_name,
+						goods_price: this.goods_info.goods_price,
+						goods_count: 1,
+						goods_small_logo: this.goods_info.goods_small_logo,
+						goods_state: true
+					}
+
+					// 通过 this 调用映射过来的 addToCart 方法，把商品信息对象存储到购物车中
+					this.addToCart(goods)
 				}
 			}
 		}

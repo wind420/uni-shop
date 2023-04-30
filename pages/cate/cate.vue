@@ -38,7 +38,9 @@
 </template>
 
 <script>
+	import badgeMix from '@/mixins/tabbar-badge.js'
 	export default {
+		mixins: [badgeMix],
 		data() {
 			return {
 				// 当前设备可用的高度（设备屏幕总高度 - 上面导航栏 - 底部tab栏）

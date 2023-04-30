@@ -2,7 +2,12 @@
 import Vue from 'vue'
 import App from './App'
 
-// 导入网略请求的包
+// 在 main.js 中导入 store 实例对象并挂载到 Vue 的实例上
+// @ 代表在根目录下
+// 1. 导入 store 的实例对象
+import store from '@/store/store.js'
+
+// 导入网络请求的包
 import { $http } from '@escook/request-miniprogram'
 
 uni.$http = $http
@@ -37,7 +42,9 @@ Vue.config.productionTip = false
 App.mpType = 'app'
 
 const app = new Vue({
-	...App
+	...App,
+	// 2. 将 store 挂载到 Vue 实例上
+	store
 })
 app.$mount()
 // #endif
