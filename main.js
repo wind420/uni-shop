@@ -15,11 +15,24 @@ uni.$http = $http
 // 配置请求的根路径
 $http.baseUrl = 'https://api-hmugo-web.itheima.net'
 
+
+// console.log(store)
+
+
 // 请求开始之前做一些事情(请求拦截器)
 $http.beforeRequest = function(options) {
 	uni.showLoading({
 		title: '数据加载中···'
 	})
+
+
+	// 判断请求的是否为有权限的 API 接口(为微信支付做准备)
+	if (options.url.indexOf('my') !== -1) {
+		// 为请求头添加身份认证字段
+		options.header = {
+			Authorization: store.state.m_user.token,
+		}
+	}
 }
 
 // 请求完成之后做一些事情(响应拦截器)
